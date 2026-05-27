@@ -1,65 +1,80 @@
 # Pharos RealFi Intelligence Engine
 
-AI-powered onchain intelligence skill for Pharos Network (Pacific Mainnet, chain 1672).
-
-## Features
-
-- Ecosystem Stats — transactions, gas spent, unique tokens and contracts
-- RWA Yield Tracker — yield earned per protocol (pAlpha, FaroSwap, Zona Pharos, OpenFi)
-- Whale Detector — large transfer detection and suspicious activity alerts
-- Portfolio Advisor — RWA exposure analysis with AI recommendations
-- Risk Engine — failed tx analysis, contract risk, suspicious pattern detection
+AI-powered onchain intelligence for Pharos Network (Pacific Mainnet, chain 1672).
+13 modules covering wallet analytics, RWA yield, whale detection, portfolio advice,
+risk scoring, liquidity positions, gas fees, top holders, price tracking, airdrop
+eligibility, NFT portfolio, transaction timeline, and cross-wallet comparison.
 
 ## Installation
 
-git clone https://github.com/YOUR_USERNAME/pharos-realfi-intelligence
+```bash
+git clone https://github.com/juhzinho/pharos-realfi-intelligence
 cd pharos-realfi-intelligence
 npm install
+```
 
-## Run Demo
+## Usage
 
-npx ts-node src/index.ts 0xYourWalletAddress
+```bash
+npx ts-node src/index.ts <wallet> <flag>
+```
 
-## Example Output
+## Modules
 
-================================================================
-   PHAROS REALFI INTELLIGENCE ENGINE
-   Network: Mainnet (chain 1672)
-================================================================
+| Flag | Module | Description |
+|------|--------|-------------|
+| `--stats` | Ecosystem Stats | Transactions, tokens, contracts, gas, activity dates |
+| `--yield` | RWA Yield | Yield by protocol: pAlpha, FaroSwap, Zona Pharos, OpenFi |
+| `--whale` | Whale Detection | Large transfers and suspicious activity alerts |
+| `--portfolio` | Portfolio Advisor | RWA exposure % with AI recommendations |
+| `--risk` | Risk Engine | Risk score/100, failed txs, suspicious pattern flags |
+| `--liquidity` | Liquidity Positions | ERC-20 LP tokens + FaroSwap V3 NFT positions |
+| `--gas` | Gas Fees | Total/average PROS spent, most expensive tx |
+| `--holders` | Top Holders | Native PROS + WPROS leaderboards with wallet rank |
+| `--price` | Price Tracker | Live on-chain balances + full portfolio USD value |
+| `--timeline` | Transaction Timeline | Monthly activity buckets and trend |
+| `--airdrop` | Airdrop Checker | 6-criteria eligibility score and verdict |
+| `--nft` | NFT Portfolio | All NFTs held, grouped by collection |
+| `--compare` | Cross-Wallet Compare | Side-by-side comparison of two wallets |
+| `--all` | Full Report | All 13 modules in one comprehensive report |
 
-1. ECOSYSTEM STATS
-   Total Transactions:    275
-   Unique Tokens Used:    9
-   Total Gas Spent:       4.88 PROS
+## Examples
 
-2. RWA YIELD BY PROTOCOL
-   pAlpha High Yield RWA Vault
-     Received:   1,847.23
-     Net:        +184.72
+```bash
+# Full wallet report
+npx ts-node src/index.ts 0xYourWallet --all
 
-3. WHALE DETECTION
-   Status: Normal wallet activity
-   Largest Transfer: 569.90 WETH
+# Check airdrop eligibility
+npx ts-node src/index.ts 0xYourWallet --airdrop
 
-4. PORTFOLIO ADVISOR
-   RWA Exposure: 67.3%
-   Summary: RWA-focused portfolio — well aligned with Pharos RealFi
+# Track RWA yield
+npx ts-node src/index.ts 0xYourWallet --yield
 
-5. RISK ENGINE
-   Risk Level: LOW
-   Risk Score: 10/100
+# Compare two wallets
+npx ts-node src/index.ts 0xWallet1 --compare 0xWallet2
+
+# Start web dashboard
+npm run server   # then open http://localhost:3000
+```
+
+## Web Dashboard
+
+Run `npm run server` and open `http://localhost:3000` for a dark-theme SPA showing
+all 13 modules with charts, gauges, and live data for any wallet address.
 
 ## Stack
 
-TypeScript + ethers.js v6
-Direct RPC: https://rpc.pharos.xyz
-No API keys required
+- TypeScript + ethers.js v6
+- Express.js web server
+- Direct RPC: `https://rpc.pharos.xyz`
+- Explorer API: `https://api.socialscan.io/pharos-mainnet`
+- No API keys required — all public endpoints
 
-## Networks
+## Network
 
-| Network | Chain ID | RPC |
-|---------|----------|-----|
-| Mainnet | 1672 | https://rpc.pharos.xyz |
+| Network | Chain ID | RPC | Explorer |
+|---------|----------|-----|----------|
+| Pharos Mainnet | 1672 | https://rpc.pharos.xyz | https://www.pharosscan.xyz |
 
 ## License
 
