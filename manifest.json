@@ -1,0 +1,47 @@
+{
+  "name": "pharos-realfi-intelligence",
+  "version": "2.0.0",
+  "description": "AI-powered onchain intelligence for Pharos Network — 14 modules covering wallet analytics, RWA yield, whale detection, portfolio advice, risk scoring, liquidity positions, gas fees, top holders, price tracking, airdrop eligibility, NFT portfolio, and cross-wallet comparison",
+  "author": "community",
+  "license": "MIT-0",
+  "network": {
+    "name": "Pharos Mainnet",
+    "chainId": 1672,
+    "rpc": "https://rpc.pharos.xyz",
+    "explorer": "https://www.pharosscan.xyz"
+  },
+  "runtime": {
+    "node": ">=18",
+    "language": "TypeScript"
+  },
+  "dependencies": {
+    "ethers": "^6.0.0",
+    "express": "^4.0.0"
+  },
+  "tools": [
+    { "name": "stats", "flag": "--stats", "description": "Ecosystem stats: transactions, tokens, contracts, activity" },
+    { "name": "yield", "flag": "--yield", "description": "RWA yield by protocol: pAlpha, FaroSwap, Zona, OpenFi" },
+    { "name": "whale", "flag": "--whale", "description": "Whale detection: large transfers and suspicious activity" },
+    { "name": "portfolio", "flag": "--portfolio", "description": "Portfolio advisor: RWA exposure and AI recommendations" },
+    { "name": "risk", "flag": "--risk", "description": "Risk engine: failed txs, contract risk, suspicious patterns" },
+    { "name": "liquidity", "flag": "--liquidity", "description": "Liquidity positions: AquaFlux aqLP + FaroSwap V3 NFTs" },
+    { "name": "gas", "flag": "--gas", "description": "Gas fees: total PROS spent, average per tx, most expensive" },
+    { "name": "holders", "flag": "--holders", "description": "Top 20 holders: native PROS and WPROS leaderboard" },
+    { "name": "price", "flag": "--price", "description": "Price tracker: PROS/USD + full portfolio USD value" },
+    { "name": "timeline", "flag": "--timeline", "description": "Transaction timeline: monthly activity and trend" },
+    { "name": "airdrop", "flag": "--airdrop", "description": "Airdrop checker: 6-criteria eligibility score and verdict" },
+    { "name": "nft", "flag": "--nft", "description": "NFT portfolio: all NFTs grouped by collection" },
+    { "name": "compare", "flag": "--compare", "description": "Cross-wallet: side-by-side comparison of 2 wallets" },
+    { "name": "swap", "flag": "--swap", "description": "Swap volume: FaroSwap swap history and token pairs" },
+    { "name": "all", "flag": "--all", "description": "Full report: all 14 modules in one comprehensive report" }
+  ],
+  "dataSourced": [
+    "Pharos RPC (https://rpc.pharos.xyz)",
+    "SocialScan API (https://api.socialscan.io/pharos-mainnet)",
+    "PharosScan (https://www.pharosscan.xyz)",
+    "CoinGecko API"
+  ],
+  "noApiKeysRequired": true,
+  "readOnly": true,
+  "webDashboard": "http://localhost:3000"
+}

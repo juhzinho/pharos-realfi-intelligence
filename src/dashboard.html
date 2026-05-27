@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pharos RealFi Intelligence</title>
+<style>
+:root {
+  --bg:       #0a0a0a;
+  --s1:       #111111;
+  --s2:       #161616;
+  --s3:       #1e1e1e;
+  --border:   #262626;
+  --blue:     #3b82f6;
+  --blue2:    #1d4ed8;
+  --green:    #10b981;
+  --red:      #ef4444;
+  --yellow:   #f59e0b;
+  --purple:   #8b5cf6;
+  --cyan:     #06b6d4;
+  --text:     #f1f5f9;
+  --muted:    #6b7280;
+  --muted2:   #9ca3af;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,-apple-system,sans-serif;min-height:100vh;line-height:1.5}
+a{color:var(--blue);text-decoration:none}
+
+/* ── header ── */
+header{border-bottom:1px solid var(--border);padding:18px 24px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100;background:rgba(10,10,10,.9);backdrop-filter:blur(12px)}
+.logo-icon{width:32px;height:32px;background:linear-gradient(135deg,var(--blue),var(--purple));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.logo-text{font-size:15px;font-weight:600;letter-spacing:.01em}
+.logo-sub{font-size:11px;color:var(--muted);margin-top:1px}
+.header-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.chain-badge{background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:11px;color:var(--muted2);display:flex;align-items:center;gap:5px}
+.chain-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* ── search ── */
+.search-wrap{max-width:760px;margin:48px auto 0;padding:0 20px}
+.search-title{text-align:center;font-size:28px;font-weight:700;margin-bottom:6px;background:linear-gradient(135deg,#f1f5f9,#94a3b8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.search-sub{text-align:center;color:var(--muted);font-size:14px;margin-bottom:28px}
+.search-box{display:flex;gap:10px;background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:6px 6px 6px 16px;transition:border-color .2s}
+.search-box:focus-within{border-color:var(--blue)}
+.search-box input{flex:1;background:transparent;border:none;outline:none;color:var(--text);font-size:14px;font-family:inherit}
+.search-box input::placeholder{color:var(--muted)}
+.btn-search{background:var(--blue);color:#fff;border:none;border-radius:8px;padding:9px 20px;font-size:13px;font-weight:600;cursor:pointer;transition:background .15s;white-space:nowrap;font-family:inherit}
+.btn-search:hover{background:var(--blue2)}
+.btn-search:disabled{opacity:.5;cursor:not-allowed}
+
+/* ── loading ── */
+#loading{display:none;text-align:center;padding:60px 0}
+.spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 16px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{color:var(--muted);font-size:13px}
+
+/* ── error ── */
+#error-box{display:none;max-width:480px;margin:32px auto;background:#1a0a0a;border:1px solid #3a1a1a;border-radius:12px;padding:20px;text-align:center;color:var(--red);font-size:14px}
+
+/* ── results ── */
+#results{display:none;max-width:1280px;margin:0 auto;padding:32px 20px 60px}
+
+/* wallet bar */
+.wallet-bar{display:flex;align-items:center;gap:12px;margin-bottom:28px;flex-wrap:wrap}
+.wallet-addr{font-family:'JetBrains Mono','Fira Code',monospace;font-size:13px;color:var(--muted2);background:var(--s1);border:1px solid var(--border);border-radius:8px;padding:6px 12px;word-break:break-all}
+.wallet-link{font-size:11px;color:var(--blue);margin-left:auto}
+.btn-refresh{background:transparent;border:1px solid var(--border);color:var(--muted2);border-radius:8px;padding:5px 12px;font-size:12px;cursor:pointer;font-family:inherit;transition:border-color .2s}
+.btn-refresh:hover{border-color:var(--blue);color:var(--text)}
+
+/* grid */
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+@media(max-width:1024px){.grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:640px){.grid{grid-template-columns:1fr}}
+.col-span-2{grid-column:span 2}
+.col-span-3{grid-column:span 3}
+@media(max-width:1024px){.col-span-2{grid-column:span 2}.col-span-3{grid-column:span 2}}
+@media(max-width:640px){.col-span-2,.col-span-3{grid-column:span 1}}
+
+/* cards */
+.card{background:var(--s1);border:1px solid var(--border);border-radius:14px;padding:20px;position:relative;overflow:hidden;transition:border-color .2s}
+.card:hover{border-color:#333}
+.card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.card-title{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:6px}
+.card-badge{font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;letter-spacing:.02em}
+.badge-green{background:rgba(16,185,129,.15);color:var(--green);border:1px solid rgba(16,185,129,.25)}
+.badge-yellow{background:rgba(245,158,11,.15);color:var(--yellow);border:1px solid rgba(245,158,11,.25)}
+.badge-red{background:rgba(239,68,68,.15);color:var(--red);border:1px solid rgba(239,68,68,.25)}
+.badge-blue{background:rgba(59,130,246,.15);color:var(--blue);border:1px solid rgba(59,130,246,.25)}
+.badge-purple{background:rgba(139,92,246,.15);color:var(--purple);border:1px solid rgba(139,92,246,.25)}
+.badge-cyan{background:rgba(6,182,212,.15);color:var(--cyan);border:1px solid rgba(6,182,212,.25)}
+
+/* score card */
+.score-main{display:flex;align-items:center;gap:24px;flex-wrap:wrap}
+.score-circle{position:relative;width:96px;height:96px;flex-shrink:0}
+.score-circle svg{transform:rotate(-90deg)}
+.score-circle .track{fill:none;stroke:var(--s3);stroke-width:8}
+.score-circle .fill{fill:none;stroke-width:8;stroke-linecap:round;transition:stroke-dashoffset .8s ease}
+.score-num{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:26px;font-weight:700}
+.score-num span{font-size:10px;color:var(--muted);font-weight:400}
+.score-info{flex:1;min-width:140px}
+.score-level{font-size:22px;font-weight:700;margin-bottom:4px}
+.score-level.diamond{background:linear-gradient(135deg,#67e8f9,#a78bfa,#67e8f9);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.score-level.gold{background:linear-gradient(135deg,#fbbf24,#f59e0b);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.score-level.silver{background:linear-gradient(135deg,#d1d5db,#9ca3af);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.score-level.bronze{background:linear-gradient(135deg,#d97706,#92400e);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.score-desc{font-size:12px;color:var(--muted);margin-bottom:12px}
+.score-stats{display:flex;gap:16px;flex-wrap:wrap}
+.score-stat{text-align:center}
+.score-stat .val{font-size:16px;font-weight:600;color:var(--text)}
+.score-stat .lbl{font-size:10px;color:var(--muted);margin-top:2px}
+
+/* stat row */
+.stat-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)}
+.stat-row:last-child{border-bottom:none}
+.stat-row .lbl{font-size:12px;color:var(--muted)}
+.stat-row .val{font-size:13px;font-weight:500;text-align:right}
+
+/* token table */
+.token-table{width:100%;border-collapse:collapse;font-size:12px}
+.token-table th{text-align:left;padding:6px 8px;color:var(--muted);font-weight:500;font-size:10px;letter-spacing:.06em;text-transform:uppercase;border-bottom:1px solid var(--border)}
+.token-table td{padding:8px 8px;border-bottom:1px solid rgba(38,38,38,.6)}
+.token-table tr:last-child td{border-bottom:none}
+.token-table tr:hover td{background:rgba(255,255,255,.02)}
+.token-sym{font-weight:600;color:var(--text)}
+.val-green{color:var(--green)}
+.val-muted{color:var(--muted)}
+
+/* protocol yield */
+.protocol-block{margin-bottom:16px}
+.protocol-block:last-child{margin-bottom:0}
+.protocol-name{font-size:12px;font-weight:600;color:var(--blue);margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+.yield-row{display:flex;align-items:center;gap:8px;padding:5px 0;font-size:12px}
+.yield-sym{width:80px;font-weight:600;flex-shrink:0}
+.yield-bar-wrap{flex:1;height:4px;background:var(--s3);border-radius:2px;overflow:hidden}
+.yield-bar{height:100%;border-radius:2px;background:var(--green);transition:width .5s ease}
+.yield-net{width:80px;text-align:right;font-weight:500}
+
+/* risk gauge */
+.risk-wrap{display:flex;align-items:center;gap:20px}
+.risk-gauge{position:relative;width:80px;height:80px;flex-shrink:0}
+.risk-gauge svg{transform:rotate(-90deg)}
+.risk-num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700}
+.risk-detail{flex:1}
+.risk-level-text{font-size:18px;font-weight:700;margin-bottom:4px}
+.risk-level-text.low{color:var(--green)}
+.risk-level-text.medium{color:var(--yellow)}
+.risk-level-text.high{color:var(--red)}
+.risk-flags{margin-top:10px;display:flex;flex-direction:column;gap:4px}
+.risk-flag{font-size:11px;color:var(--muted2);display:flex;align-items:flex-start;gap:6px}
+.risk-flag::before{content:"!";color:var(--yellow);font-weight:700;flex-shrink:0}
+
+/* airdrop */
+.airdrop-score-bar{height:6px;background:var(--s3);border-radius:3px;margin-bottom:16px;overflow:hidden}
+.airdrop-score-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--blue),var(--purple));transition:width .6s ease}
+.criteria-list{display:flex;flex-direction:column;gap:6px}
+.criterion{display:flex;align-items:center;gap:8px;font-size:12px}
+.criterion-icon{width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;flex-shrink:0}
+.icon-pass{background:rgba(16,185,129,.2);color:var(--green)}
+.icon-fail{background:rgba(239,68,68,.12);color:var(--red)}
+.criterion-label{color:var(--muted2);flex:1}
+.criterion-actual{color:var(--text);font-weight:500;text-align:right}
+
+/* gas */
+.gas-big{font-size:28px;font-weight:700;margin-bottom:2px}
+.gas-sub{font-size:12px;color:var(--muted)}
+
+/* liquidity */
+.lp-card{background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:8px}
+.lp-card:last-child{margin-bottom:0}
+.lp-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.lp-token{font-size:13px;font-weight:600}
+.lp-pool{font-size:11px;color:var(--muted)}
+.lp-pair{font-size:11px;color:var(--blue);background:rgba(59,130,246,.1);border-radius:4px;padding:2px 6px}
+.v3-badges{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.v3-badge{background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:3px 8px;font-size:11px;font-family:monospace;color:var(--cyan)}
+
+/* nft */
+.nft-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:8px}
+.nft-tile{background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center;font-size:10px}
+.nft-id{font-size:12px;font-weight:600;color:var(--blue);word-break:break-all}
+.nft-date{color:var(--muted);margin-top:3px}
+.nft-count-big{font-size:40px;font-weight:700;color:var(--blue)}
+
+/* timeline */
+.timeline-bars{display:flex;flex-direction:column;gap:6px}
+.tl-row{display:flex;align-items:center;gap:10px;font-size:11px}
+.tl-month{width:54px;color:var(--muted);flex-shrink:0;font-variant-numeric:tabular-nums}
+.tl-bar-wrap{flex:1;height:16px;background:var(--s3);border-radius:4px;overflow:hidden;position:relative}
+.tl-bar{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--blue),var(--purple));transition:width .5s ease;min-width:2px}
+.tl-count{width:32px;text-align:right;color:var(--muted2);font-variant-numeric:tabular-nums}
+
+/* holders */
+.holder-row{display:flex;align-items:center;gap:8px;padding:5px 0;font-size:12px;border-bottom:1px solid rgba(38,38,38,.5)}
+.holder-row:last-child{border-bottom:none}
+.holder-rank{width:24px;color:var(--muted);font-variant-numeric:tabular-nums;flex-shrink:0}
+.holder-addr{flex:1;font-family:monospace;font-size:11px;color:var(--muted2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.holder-addr.you{color:var(--blue)}
+.holder-bal{text-align:right;font-weight:500;font-variant-numeric:tabular-nums}
+.holder-pct{width:52px;text-align:right;color:var(--muted);font-size:10px}
+
+/* tabs */
+.tab-bar{display:flex;gap:4px;margin-bottom:12px;background:var(--s2);border-radius:8px;padding:3px}
+.tab{flex:1;text-align:center;padding:5px 0;font-size:11px;font-weight:500;border-radius:6px;cursor:pointer;color:var(--muted);transition:all .15s;border:none;background:transparent;font-family:inherit}
+.tab.active{background:var(--s1);color:var(--text)}
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+
+/* empty */
+.empty{text-align:center;color:var(--muted);font-size:13px;padding:20px}
+
+/* section divider */
+.section-title{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:28px 0 12px;display:flex;align-items:center;gap:8px}
+.section-title::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* tooltips */
+[data-tip]{position:relative;cursor:default}
+[data-tip]:hover::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:#222;border:1px solid var(--border);border-radius:6px;padding:5px 8px;font-size:11px;white-space:nowrap;z-index:9;pointer-events:none;color:var(--text)}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-icon">⬡</div>
+  <div>
+    <div class="logo-text">Pharos RealFi Intelligence</div>
+    <div class="logo-sub">On-chain analytics engine</div>
+  </div>
+  <div class="header-right">
+    <div class="chain-badge"><span class="chain-dot"></span>Mainnet · Chain 1672</div>
+  </div>
+</header>
+
+<div class="search-wrap">
+  <div class="search-title">Wallet Intelligence</div>
+  <div class="search-sub">Enter any wallet address to get a complete on-chain analysis</div>
+  <div class="search-box">
+    <input id="addr-input" type="text" placeholder="0x..." autocomplete="off" spellcheck="false">
+    <button class="btn-search" id="btn-search" onclick="search()">Analyze</button>
+  </div>
+</div>
+
+<div id="loading">
+  <div class="spinner"></div>
+  <div class="loading-text" id="loading-msg">Fetching on-chain data…</div>
+</div>
+<div id="error-box"></div>
+
+<div id="results">
+  <div class="wallet-bar">
+    <div class="wallet-addr" id="wallet-display"></div>
+    <a id="wallet-link" class="wallet-link" target="_blank" rel="noopener">View on Explorer ↗</a>
+    <button class="btn-refresh" onclick="search()">↺ Refresh</button>
+  </div>
+
+  <!-- row 1: score + stats -->
+  <div class="grid">
+    <!-- Score -->
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title">◈ Wallet Score</div>
+        <div id="score-badge" class="card-badge badge-blue">—</div>
+      </div>
+      <div class="score-main">
+        <div class="score-circle">
+          <svg width="96" height="96" viewBox="0 0 96 96">
+            <circle class="track" cx="48" cy="48" r="40"/>
+            <circle id="score-arc" class="fill" cx="48" cy="48" r="40" stroke="#3b82f6"
+              stroke-dasharray="251.3" stroke-dashoffset="251.3"/>
+          </svg>
+          <div class="score-num" id="score-num">0<span>/ 100</span></div>
+        </div>
+        <div class="score-info">
+          <div class="score-level" id="score-level">—</div>
+          <div class="score-desc" id="score-desc">Analyzing wallet activity…</div>
+          <div class="score-stats">
+            <div class="score-stat"><div class="val" id="sc-tx">—</div><div class="lbl">Txns</div></div>
+            <div class="score-stat"><div class="val" id="sc-lp">—</div><div class="lbl">LP Pos</div></div>
+            <div class="score-stat"><div class="val" id="sc-tok">—</div><div class="lbl">Tokens</div></div>
+            <div class="score-stat"><div class="val" id="sc-rwa">—</div><div class="lbl">RWA%</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ecosystem Stats -->
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title">📊 Ecosystem Stats</div>
+      </div>
+      <div class="stat-row"><span class="lbl">Total Transactions</span><span class="val" id="st-tx">—</span></div>
+      <div class="stat-row"><span class="lbl">Token Transfers</span><span class="val" id="st-tf">—</span></div>
+      <div class="stat-row"><span class="lbl">Unique Tokens</span><span class="val" id="st-utok">—</span></div>
+      <div class="stat-row"><span class="lbl">Unique Contracts</span><span class="val" id="st-uc">—</span></div>
+      <div class="stat-row"><span class="lbl">Most Active Token</span><span class="val" id="st-mat">—</span></div>
+      <div class="stat-row"><span class="lbl">First Activity</span><span class="val" id="st-first">—</span></div>
+      <div class="stat-row"><span class="lbl">Last Activity</span><span class="val" id="st-last">—</span></div>
+      <div class="stat-row"><span class="lbl">Latest Block</span><span class="val" id="st-block">—</span></div>
+    </div>
+
+    <!-- Risk -->
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title">⚠ Risk Engine</div>
+        <div id="risk-badge" class="card-badge badge-green">LOW</div>
+      </div>
+      <div class="risk-wrap">
+        <div class="risk-gauge">
+          <svg width="80" height="80" viewBox="0 0 80 80">
+            <circle class="track" cx="40" cy="40" r="32" fill="none" stroke="var(--s3)" stroke-width="7"/>
+            <circle id="risk-arc" cx="40" cy="40" r="32" fill="none" stroke-width="7"
+              stroke-linecap="round" stroke="var(--green)"
+              stroke-dasharray="201" stroke-dashoffset="201"
+              style="transform:rotate(-90deg);transform-origin:center;transition:stroke-dashoffset .6s ease"/>
+          </svg>
+          <div class="risk-num" id="risk-num">0</div>
+        </div>
+        <div class="risk-detail">
+          <div class="risk-level-text low" id="risk-level">LOW</div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:8px" id="risk-summary">—</div>
+          <div class="stat-row" style="padding:4px 0"><span class="lbl" style="font-size:11px">Failed Txs</span><span class="val" style="font-size:12px" id="risk-failed">—</span></div>
+          <div class="stat-row" style="padding:4px 0"><span class="lbl" style="font-size:11px">Contracts</span><span class="val" style="font-size:12px" id="risk-contracts">—</span></div>
+        </div>
+      </div>
+      <div id="risk-flags" class="risk-flags"></div>
+    </div>
+  </div>
+
+  <!-- row 2: tokens + yield -->
+  <div class="section-title">Portfolio</div>
+  <div class="grid">
+    <!-- Token Balances -->
+    <div class="card col-span-2">
+      <div class="card-head">
+        <div class="card-title">💎 Token Balances</div>
+        <div id="price-total" class="card-badge badge-green">$0.00</div>
+      </div>
+      <div style="margin-bottom:8px;display:flex;align-items:center;gap:8px;font-size:11px;color:var(--muted)">
+        <span>PROS price:</span>
+        <span id="pros-price" style="color:var(--text);font-weight:500">—</span>
+        <span id="pros-source" style="color:var(--muted)"></span>
+      </div>
+      <table class="token-table">
+        <thead><tr><th>Token</th><th style="text-align:right">Balance</th><th style="text-align:right">Price USD</th><th style="text-align:right">Value USD</th></tr></thead>
+        <tbody id="token-rows"></tbody>
+      </table>
+    </div>
+
+    <!-- Airdrop -->
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title">🎯 Airdrop Eligibility</div>
+        <div id="airdrop-badge" class="card-badge badge-blue">—</div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
+        <span id="airdrop-score" style="font-size:22px;font-weight:700">0</span>
+        <span id="airdrop-max" style="font-size:12px;color:var(--muted)">/ 6</span>
+      </div>
+      <div class="airdrop-score-bar"><div class="airdrop-score-fill" id="airdrop-fill" style="width:0"></div></div>
+      <div class="criteria-list" id="airdrop-criteria"></div>
+    </div>
+  </div>
+
+  <!-- row 3: yield + gas + timeline -->
+  <div class="section-title">Activity</div>
+  <div class="grid">
+    <!-- RWA Yield -->
+    <div class="card col-span-2">
+      <div class="card-head">
+        <div class="card-title">📈 RWA Yield by Protocol</div>
+      </div>
+      <div id="yield-content"></div>
+    </div>
+
+    <!-- Gas -->
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title">⛽ Gas Fees</div>
+      </div>
+      <div class="gas-big" id="gas-total">—</div>
+      <div class="gas-sub" style="margin-bottom:16px" id="gas-usd">— USD</div>
+      <div class="stat-row"><span class="lbl">Transactions</span><span class="val" id="gas-tx">—</span></div>
+      <div class="stat-row"><span class="lbl">Avg per Tx</span><span class="val" id="gas-avg">—</span></div>
+      <div class="stat-row"><span class="lbl">Highest Tx</span><span class="val" id="gas-top">—</span></div>
+    </div>
+  </div>
+
+  <!-- row 4: timeline + liquidity + nft -->
+  <div class="section-title">Positions & History</div>
+  <div class="grid">
+    <!-- Timeline -->
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title">📅 Tx Timeline</div>
+        <div id="tl-trend" class="card-badge badge-blue">stable</div>
+      </div>
+      <div class="timeline-bars" id="tl-bars"></div>
+    </div>
+
+    <!-- Liquidity -->
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title">💧 Liquidity Positions</div>
+      </div>
+      <div id="liq-content"><div class="empty">No LP positions found</div></div>
+    </div>
+
+    <!-- NFT -->
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title">🖼 NFT Portfolio</div>
+        <div id="nft-badge" class="card-badge badge-purple">0 held</div>
+      </div>
+      <div id="nft-content"><div class="empty">No NFTs held</div></div>
+    </div>
+  </div>
+
+  <!-- row 5: holders -->
+  <div class="section-title">Top Holders</div>
+  <div class="grid">
+    <div class="card col-span-2">
+      <div class="card-head">
+        <div class="card-title">👑 PROS &amp; WPROS Top 20</div>
+      </div>
+      <div class="tab-bar">
+        <button class="tab active" onclick="switchTab('pros')">Native PROS</button>
+        <button class="tab" onclick="switchTab('wpros')">WPROS</button>
+      </div>
+      <div id="tab-pros" class="tab-panel active">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:10px">
+          Your balance: <span id="h-pros-bal" style="color:var(--text);font-weight:500">—</span>
+          &nbsp;·&nbsp; Rank: <span id="h-pros-rank" style="color:var(--text)">—</span>
+        </div>
+        <div id="holders-pros"></div>
+      </div>
+      <div id="tab-wpros" class="tab-panel">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:10px">
+          Supply: <span id="h-wpros-supply" style="color:var(--text);font-weight:500">—</span>
+          &nbsp;·&nbsp; Your balance: <span id="h-wpros-bal" style="color:var(--text)">—</span>
+        </div>
+        <div id="holders-wpros"></div>
+      </div>
+    </div>
+
+    <!-- Pros info card -->
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title">🔗 Network Info</div>
+      </div>
+      <div class="stat-row"><span class="lbl">PROS Holders</span><span class="val" id="ni-pros-holders">—</span></div>
+      <div class="stat-row"><span class="lbl">WPROS Holders</span><span class="val" id="ni-wpros-holders">—</span></div>
+      <div class="stat-row"><span class="lbl">WPROS Supply</span><span class="val" id="ni-wpros-supply">—</span></div>
+      <div class="stat-row"><span class="lbl">Your PROS Rank</span><span class="val" id="ni-pros-rank">—</span></div>
+      <div class="stat-row"><span class="lbl">Your WPROS Rank</span><span class="val" id="ni-wpros-rank">—</span></div>
+      <div style="margin-top:12px">
+        <a id="ni-explorer" href="#" target="_blank" rel="noopener"
+          style="font-size:12px;color:var(--blue)">View on PharosScan ↗</a>
+      </div>
+    </div>
+  </div>
+</div><!-- #results -->
+
+<script>
+const API = '';
+
+function $(id){ return document.getElementById(id) }
+function fmt(n, dec=4){ return Number(n).toLocaleString('en-US',{maximumFractionDigits:dec,minimumFractionDigits:0}) }
+function fmtD(n){ return '$' + Number(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}) }
+function shortAddr(a){ return a.length > 12 ? a.slice(0,8)+'…'+a.slice(-6) : a }
+function dateStr(s){ return s ? s.slice(0,10) : '—' }
+
+let currentAddr = '';
+
+async function search(){
+  const input = $('addr-input');
+  const addr  = (input.value || currentAddr).trim();
+  if(!addr || !/^0x[0-9a-fA-F]{40}$/.test(addr)){
+    showError('Please enter a valid Ethereum address (0x…)');
+    return;
+  }
+  currentAddr = addr;
+  input.value = addr;
+
+  $('results').style.display = 'none';
+  $('error-box').style.display = 'none';
+  $('loading').style.display = 'block';
+  $('btn-search').disabled = true;
+  $('loading-msg').textContent = 'Fetching on-chain data…';
+
+  try {
+    const r   = await fetch(`${API}/api/wallet/${addr}/all`);
+    const res = await r.json();
+    if(!res.ok) throw new Error(res.error || 'API error');
+    render(addr, res.data);
+  } catch(e){
+    showError(e.message || 'Failed to fetch data. Is the server running?');
+  } finally {
+    $('loading').style.display = 'none';
+    $('btn-search').disabled = false;
+  }
+}
+
+function showError(msg){
+  const el = $('error-box');
+  el.textContent = '⚠ ' + msg;
+  el.style.display = 'block';
+}
+
+function render(addr, d){
+  $('wallet-display').textContent = addr;
+  $('wallet-link').href = `https://www.pharosscan.xyz/address/${addr}`;
+  $('ni-explorer').href = `https://www.pharosscan.xyz/address/${addr}`;
+
+  renderScore(d.score);
+  renderStats(d.stats);
+  renderRisk(d.risk);
+  renderPrice(d.price);
+  renderAirdrop(d.airdrop);
+  renderYield(d.yield);
+  renderGas(d.gas);
+  renderTimeline(d.timeline);
+  renderLiquidity(d.liquidity);
+  renderNft(d.nft);
+  renderHolders(d.holders, addr.toLowerCase());
+
+  $('results').style.display = 'block';
+  $('results').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+// ── Score ──
+function renderScore(s){
+  if(!s) return;
+  const pct = s.walletScore / 100;
+  const circ = 251.3;
+  const offset = circ - pct * circ;
+  $('score-arc').style.strokeDashoffset = offset;
+
+  const levelColors = {Diamond:'#06b6d4', Gold:'#f59e0b', Silver:'#9ca3af', Bronze:'#b45309'};
+  $('score-arc').setAttribute('stroke', levelColors[s.level] || '#3b82f6');
+
+  $('score-num').innerHTML = s.walletScore + '<span>/ 100</span>';
+  $('score-level').textContent = s.level;
+  $('score-level').className = 'score-level ' + s.level.toLowerCase();
+
+  const descs = {
+    Diamond: 'Top-tier DeFi participant — highly active in the Pharos ecosystem',
+    Gold:    'Active DeFi user with strong RealFi engagement',
+    Silver:  'Growing portfolio with moderate on-chain activity',
+    Bronze:  'Early-stage wallet — keep transacting to grow your score',
+  };
+  $('score-desc').textContent = descs[s.level] || '';
+
+  const badgeClass = {Diamond:'badge-cyan', Gold:'badge-yellow', Silver:'badge-blue', Bronze:'badge-purple'};
+  $('score-badge').textContent = s.level;
+  $('score-badge').className = 'card-badge ' + (badgeClass[s.level] || 'badge-blue');
+
+  $('sc-tx').textContent  = fmt(s.txCount, 0);
+  $('sc-lp').textContent  = s.lpPositions;
+  $('sc-tok').textContent = s.tokenVariety;
+  $('sc-rwa').textContent = s.rwaExposurePct.toFixed(1) + '%';
+}
+
+// ── Stats ──
+function renderStats(s){
+  if(!s) return;
+  $('st-tx').textContent    = fmt(s.totalTransactions, 0);
+  $('st-tf').textContent    = fmt(s.totalTokenTransfers, 0);
+  $('st-utok').textContent  = s.uniqueTokensUsed;
+  $('st-uc').textContent    = s.uniqueContractsInteracted;
+  $('st-mat').textContent   = s.mostActiveToken + ' (' + s.mostActiveTokenTransfers + ' txs)';
+  $('st-first').textContent = dateStr(s.firstActivity);
+  $('st-last').textContent  = dateStr(s.lastActivity);
+  $('st-block').textContent = fmt(s.latestBlock, 0);
+}
+
+// ── Risk ──
+function renderRisk(r){
+  if(!r) return;
+  const pct    = r.riskScore / 100;
+  const circ   = 201;
+  const offset = circ - pct * circ;
+  $('risk-arc').style.strokeDashoffset = offset;
+
+  const lvl = r.riskLevel;
+  const col  = lvl==='LOW' ? 'var(--green)' : lvl==='MEDIUM' ? 'var(--yellow)' : 'var(--red)';
+  $('risk-arc').setAttribute('stroke', col);
+  $('risk-num').textContent = r.riskScore;
+  $('risk-num').style.color = col;
+
+  const cl  = lvl.toLowerCase();
+  $('risk-level').textContent  = lvl;
+  $('risk-level').className    = 'risk-level-text ' + cl;
+  $('risk-summary').textContent = r.summary;
+
+  const bMap = {LOW:'badge-green', MEDIUM:'badge-yellow', HIGH:'badge-red'};
+  $('risk-badge').textContent  = lvl;
+  $('risk-badge').className    = 'card-badge ' + (bMap[lvl] || 'badge-blue');
+
+  $('risk-failed').textContent    = r.failedTransactions + ' (' + r.failRate + '%)';
+  $('risk-contracts').textContent = r.uniqueContracts;
+
+  const flagsEl = $('risk-flags');
+  flagsEl.innerHTML = '';
+  for(const f of (r.riskFlags || [])){
+    const d = document.createElement('div');
+    d.className = 'risk-flag';
+    d.textContent = f;
+    flagsEl.appendChild(d);
+  }
+}
+
+// ── Price ──
+function renderPrice(p){
+  if(!p) return;
+  $('pros-price').textContent  = p.prosUsd > 0 ? fmtD(p.prosUsd) : 'unavailable';
+  $('pros-source').textContent = '(' + p.priceSource + ')';
+  $('price-total').textContent = fmtD(p.totalUsd);
+
+  const tbody = $('token-rows');
+  tbody.innerHTML = '';
+  if(!p.balances || p.balances.length === 0){
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:16px">No token balances found</td></tr>';
+    return;
+  }
+  for(const b of p.balances){
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><span class="token-sym">${esc(b.symbol)}</span></td>
+      <td style="text-align:right;font-variant-numeric:tabular-nums">${fmt(b.netBalance,6)}</td>
+      <td style="text-align:right">${b.priceUsd !== null ? fmtD(b.priceUsd) : '<span class="val-muted">N/A</span>'}</td>
+      <td style="text-align:right">${b.valueUsd > 0 ? '<span class="val-green">'+fmtD(b.valueUsd)+'</span>' : '<span class="val-muted">—</span>'}
+    `;
+    tbody.appendChild(tr);
+  }
+}
+
+// ── Airdrop ──
+function renderAirdrop(a){
+  if(!a) return;
+  const verdictBadge = {
+    'HIGHLY ELIGIBLE':'badge-green',
+    'ELIGIBLE':'badge-blue',
+    'LOW ELIGIBILITY':'badge-yellow',
+  };
+  $('airdrop-badge').textContent = a.verdict;
+  $('airdrop-badge').className   = 'card-badge ' + (verdictBadge[a.verdict] || 'badge-blue');
+  $('airdrop-score').textContent = a.score;
+  $('airdrop-max').textContent   = '/ ' + a.maxScore;
+  $('airdrop-fill').style.width  = (a.score / a.maxScore * 100) + '%';
+
+  const el = $('airdrop-criteria');
+  el.innerHTML = '';
+  for(const c of a.criteria){
+    const div = document.createElement('div');
+    div.className = 'criterion';
+    div.innerHTML = `
+      <div class="criterion-icon ${c.passed ? 'icon-pass':'icon-fail'}">${c.passed ? '✓':'✗'}</div>
+      <span class="criterion-label">${esc(c.label)}</span>
+      <span class="criterion-actual">${esc(c.actual)}</span>
+    `;
+    el.appendChild(div);
+  }
+}
+
+// ── Yield ──
+function renderYield(y){
+  if(!y){ $('yield-content').innerHTML = '<div class="empty">No yield data</div>'; return; }
+  const el = $('yield-content');
+  el.innerHTML = '';
+
+  // Find max net for bar scaling
+  let maxNet = 0;
+  for(const [, tokens] of Object.entries(y)){
+    for(const [, data] of Object.entries(tokens)){
+      if(data.net > maxNet) maxNet = data.net;
+    }
+  }
+
+  const order = ['pAlpha High Yield RWA Vault','FaroSwap DEX','Zona Pharos','OpenFi','Other'];
+  const sorted = Object.entries(y).sort(([a],[b]) => {
+    const ai = order.indexOf(a), bi = order.indexOf(b);
+    return (ai===-1?99:ai) - (bi===-1?99:bi);
+  });
+
+  for(const [proto, tokens] of sorted){
+    const entries = Object.entries(tokens);
+    if(entries.length === 0) continue;
+    const block = document.createElement('div');
+    block.className = 'protocol-block';
+    block.innerHTML = `<div class="protocol-name">${esc(proto)}</div>`;
+    for(const [sym, data] of entries){
+      const barW = maxNet > 0 ? Math.max(2, (data.net / maxNet) * 100) : 0;
+      const netCol = data.net > 0 ? 'var(--green)' : data.net < 0 ? 'var(--red)' : 'var(--muted)';
+      const row = document.createElement('div');
+      row.className = 'yield-row';
+      row.innerHTML = `
+        <span class="yield-sym">${esc(sym)}</span>
+        <div class="yield-bar-wrap"><div class="yield-bar" style="width:${barW}%"></div></div>
+        <span class="yield-net" style="color:${netCol}">${data.net >= 0 ? '+' : ''}${fmt(data.net,4)}</span>
+        <span style="color:var(--muted);font-size:11px;width:40px;text-align:right">${data.transfers}tx</span>
+      `;
+      block.appendChild(row);
+    }
+    el.appendChild(block);
+  }
+  if(el.innerHTML === '') el.innerHTML = '<div class="empty">No yield data found</div>';
+}
+
+// ── Gas ──
+function renderGas(g){
+  if(!g) return;
+  $('gas-total').textContent = fmt(g.totalGas, 6) + ' PROS';
+  $('gas-usd').textContent   = '≈ ' + fmtD(g.totalGasUsd) + ' USD';
+  $('gas-tx').textContent    = g.txWithFees + ' / ' + g.txCount;
+  $('gas-avg').textContent   = fmt(g.avgGas, 6) + ' PROS';
+  if(g.topTx && g.topTx.hash){
+    $('gas-top').innerHTML = fmt(g.topTx.fee, 6) + ' PROS<br>'
+      + '<span style="font-size:10px;color:var(--muted)">'
+      + g.topTx.hash.slice(0,10) + '… · ' + dateStr(g.topTx.date)
+      + '</span>';
+  } else {
+    $('gas-top').textContent = '—';
+  }
+}
+
+// ── Timeline ──
+function renderTimeline(t){
+  if(!t || !t.buckets.length){ $('tl-bars').innerHTML='<div class="empty">No data</div>'; return; }
+  const trendBadge = {increasing:'badge-green', decreasing:'badge-red', stable:'badge-blue'};
+  $('tl-trend').textContent = t.trend;
+  $('tl-trend').className   = 'card-badge ' + (trendBadge[t.trend] || 'badge-blue');
+
+  const maxTx = Math.max(...t.buckets.map(b=>b.txCount), 1);
+  const el = $('tl-bars');
+  el.innerHTML = '';
+  for(const b of t.buckets){
+    const pct = (b.txCount / maxTx * 100).toFixed(1);
+    const isActive = b.month === t.mostActiveMonth;
+    const row = document.createElement('div');
+    row.className = 'tl-row';
+    row.innerHTML = `
+      <span class="tl-month">${b.month.slice(2)}</span>
+      <div class="tl-bar-wrap" data-tip="${b.txCount} txs · ${fmt(b.gasSpent,4)} PROS gas">
+        <div class="tl-bar" style="width:${pct}%;${isActive?'background:var(--yellow)':''}"></div>
+      </div>
+      <span class="tl-count">${b.txCount}</span>
+    `;
+    el.appendChild(row);
+  }
+}
+
+// ── Liquidity ──
+function renderLiquidity(l){
+  if(!l){ return; }
+  const el = $('liq-content');
+  const parts = [];
+
+  if(l.erc20Positions && l.erc20Positions.length > 0){
+    for(const p of l.erc20Positions){
+      parts.push(`
+        <div class="lp-card">
+          <div class="lp-head">
+            <span class="lp-token">${esc(p.lpToken)}</span>
+            <span class="lp-pair">${esc(p.pair)}</span>
+          </div>
+          <div class="lp-pool" style="margin-bottom:6px">${esc(p.pool)}</div>
+          <div style="display:flex;gap:16px;font-size:11px">
+            <span style="color:var(--green)">+${fmt(p.received,4)} recv</span>
+            <span style="color:var(--red)">-${fmt(p.sent,4)} sent</span>
+            <span style="color:var(--blue);font-weight:600">= ${fmt(p.net,4)} net</span>
+          </div>
+        </div>
+      `);
+    }
+  }
+
+  if(l.v3TotalMinted > 0){
+    const badges = l.v3ActiveTokenIds.map(id=>`<span class="v3-badge">#${esc(id)}</span>`).join('');
+    parts.push(`
+      <div class="lp-card">
+        <div class="lp-head">
+          <span class="lp-token">FaroSwap V3</span>
+          <span class="lp-pair">UNI-V3-POS</span>
+        </div>
+        <div class="lp-pool" style="margin-bottom:8px">
+          ${l.v3ActiveTokenIds.length} active / ${l.v3TotalMinted} minted
+        </div>
+        <div class="v3-badges">${badges}</div>
+      </div>
+    `);
+  }
+
+  el.innerHTML = parts.length > 0 ? parts.join('') : '<div class="empty">No LP positions found</div>';
+}
+
+// ── NFT ──
+function renderNft(n){
+  if(!n) return;
+  $('nft-badge').textContent = n.totalHeld + ' held';
+  const el = $('nft-content');
+  if(n.totalHeld === 0){
+    el.innerHTML = `<div class="empty">${n.totalReceived} received, none held</div>`;
+    return;
+  }
+  const tiles = [];
+  for(const col of n.collections){
+    for(const h of col.holdings){
+      const short = h.tokenId.length > 8 ? h.tokenId.slice(0,6)+'…' : h.tokenId;
+      tiles.push(`
+        <div class="nft-tile">
+          <div class="nft-id">#${esc(short)}</div>
+          <div class="nft-date">${dateStr(h.receivedDate)}</div>
+        </div>
+      `);
+    }
+  }
+  el.innerHTML = '<div class="nft-grid">' + tiles.join('') + '</div>';
+}
+
+// ── Holders ──
+function renderHolders(h, walletLower){
+  if(!h) return;
+  const { native, wpros } = h;
+
+  // PROS native
+  if(native){
+    $('h-pros-bal').textContent  = fmt(native.walletBalance, 4) + ' PROS';
+    $('h-pros-rank').textContent = native.walletRank ? '#' + native.walletRank : 'not in top 20';
+    $('ni-pros-holders').textContent = fmt(native.totalTracked, 0);
+    $('ni-pros-rank').textContent    = native.walletRank ? '#' + native.walletRank : '—';
+
+    const el = $('holders-pros');
+    el.innerHTML = '';
+    for(const hh of native.top20){
+      const isYou = hh.address.toLowerCase() === walletLower;
+      const name  = hh.displayName || shortAddr(hh.address);
+      const row   = document.createElement('div');
+      row.className = 'holder-row' + (isYou ? ' you' : '');
+      row.innerHTML = `
+        <span class="holder-rank">#${hh.rank}</span>
+        <span class="holder-addr${isYou?' you':''}" title="${hh.address}">${esc(name)}</span>
+        <span class="holder-bal">${fmt(hh.balance,2)}</span>
+        <span class="holder-pct">${hh.percentage.toFixed(3)}%</span>
+      `;
+      el.appendChild(row);
+    }
+  }
+
+  // WPROS
+  if(wpros){
+    $('h-wpros-supply').textContent = fmt(wpros.totalSupply, 2) + ' WPROS';
+    $('h-wpros-bal').textContent    = fmt(wpros.walletBalance, 4) + ' WPROS'
+      + (wpros.walletPct > 0 ? '  (' + wpros.walletPct.toFixed(4) + '%)' : '');
+    $('ni-wpros-holders').textContent = fmt(wpros.totalHolders, 0);
+    $('ni-wpros-supply').textContent  = fmt(wpros.totalSupply, 2);
+    $('ni-wpros-rank').textContent    = wpros.walletRank
+      ? '#' + wpros.walletRank
+      : wpros.walletBalance > 0 ? 'not found' : '—';
+
+    const el = $('holders-wpros');
+    el.innerHTML = '';
+    for(const hh of wpros.top20){
+      const isYou = hh.address.toLowerCase() === walletLower;
+      const name  = hh.displayName || shortAddr(hh.address);
+      const row   = document.createElement('div');
+      row.className = 'holder-row' + (isYou ? ' you' : '');
+      row.innerHTML = `
+        <span class="holder-rank">#${hh.rank}</span>
+        <span class="holder-addr${isYou?' you':''}" title="${hh.address}">${esc(name)}</span>
+        <span class="holder-bal">${fmt(hh.balance,2)}</span>
+        <span class="holder-pct">${hh.percentage.toFixed(3)}%</span>
+      `;
+      el.appendChild(row);
+    }
+  }
+}
+
+function switchTab(which){
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', (i===0&&which==='pros')||(i===1&&which==='wpros')));
+  $('tab-pros').classList.toggle('active',  which==='pros');
+  $('tab-wpros').classList.toggle('active', which==='wpros');
+}
+
+function esc(s){
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// Enter key in input
+$('addr-input').addEventListener('keydown', e => { if(e.key==='Enter') search(); });
+
+// Pre-fill from URL hash
+const hashAddr = location.hash.slice(1);
+if(/^0x[0-9a-fA-F]{40}$/.test(hashAddr)){
+  $('addr-input').value = hashAddr;
+  search();
+}
+</script>
+</body>
+</html>
